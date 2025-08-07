@@ -40,14 +40,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9EC),
+      backgroundColor: const Color(0xFFEBDEBA),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Center(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Icon(Icons.person_add, size: 80, color: Colors.amber),
+                Icon(Icons.person_add, size: 80, color: Colors.amber[800]),
                 SizedBox(height: 20),
                 Text("Create Account", style: TextStyle(fontSize: 24)),
                 SizedBox(height: 30),
