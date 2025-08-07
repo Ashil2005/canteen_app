@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+// Comment this if firebase_options.dart is not yet generated
+import 'firebase_options.dart';
+
+import 'screens/login/login_screen.dart';
+import 'screens/register/register_screen.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase only if firebase_options.dart exists
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(CanteenApp());
 }
 
@@ -14,21 +28,11 @@ class CanteenApp extends StatelessWidget {
         primarySwatch: Colors.amber,
         useMaterial3: true,
       ),
-      home: HomePlaceholder(),
-    );
-  }
-}
-
-class HomePlaceholder extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          '🚀 Canteen App is Live!',
-          style: TextStyle(fontSize: 24),
-        ),
-      ),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => LoginScreen(),
+        '/register': (context) => RegisterScreen(),
+      },
     );
   }
 }
