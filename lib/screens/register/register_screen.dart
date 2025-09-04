@@ -29,12 +29,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (user != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Account created successfully!')),
+        const SnackBar(content: Text('Account created successfully!')),
       );
+      // ✅ Go directly to login using named route
       Navigator.pushReplacementNamed(context, '/login');
     } else {
       setState(() => _error = 'Registration failed. Try again.');
     }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -48,23 +56,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               children: [
                 Icon(Icons.person_add, size: 80, color: Colors.amber[800]),
-                SizedBox(height: 20),
-                Text("Create Account", style: TextStyle(fontSize: 24)),
-                SizedBox(height: 30),
+                const SizedBox(height: 20),
+                const Text("Create Account", style: TextStyle(fontSize: 24)),
+                const SizedBox(height: 30),
+
+                // 🔹 Email field
                 TextField(
                   controller: _emailController,
-                  decoration: InputDecoration(
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
+
+                // 🔹 Password field
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
@@ -79,24 +92,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
+
+                // 🔹 Error message
                 if (_error != null)
-                  Text(_error!, style: TextStyle(color: Colors.red)),
+                  Text(_error!, style: const TextStyle(color: Colors.red)),
+
+                // 🔹 Register button
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleRegister,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber[800],
-                    minimumSize: Size(double.infinity, 48),
+                    minimumSize: const Size(double.infinity, 48),
                   ),
                   child: _isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : Text("Register"),
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Register"),
                 ),
+
+                // 🔹 Back to login button (named route)
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
-                  child: Text("Already have an account? Login"),
+                  child: const Text("Already have an account? Login"),
                 ),
               ],
             ),
