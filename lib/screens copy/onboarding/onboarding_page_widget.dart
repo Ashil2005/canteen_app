@@ -19,7 +19,7 @@ class OnboardingPageWidget extends StatelessWidget {
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Color(0xFFB9375D),
+            color: Colors.orange,
           ),
           textAlign: TextAlign.center,
         ),
