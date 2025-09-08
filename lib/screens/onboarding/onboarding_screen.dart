@@ -17,9 +17,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _nextPage() {
     if (_currentIndex < onboardingData.length - 1) {
       _controller.nextPage(
-          duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeIn,
+      );
     } else {
-      // Navigate to home/login page
+      // ✅ Navigate to login after onboarding
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
@@ -38,7 +41,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: _skip,
-                child: const Text('Skip', style: TextStyle(color: Colors.black)),
+                child: const Text(
+                  'Skip',
+                  style: TextStyle(
+                    color: AppColors.primary, // ✅ unified primary color
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
             Expanded(
@@ -65,7 +74,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   height: 8,
                   width: _currentIndex == index ? 24 : 8,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFB9375D),
+                    color: AppColors.primary, // ✅ dot color unified
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
@@ -77,7 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: ElevatedButton(
                 onPressed: _nextPage,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB9375D),
+                  backgroundColor: AppColors.primary, // ✅ button color unified
                   minimumSize: const Size.fromHeight(48),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -87,7 +96,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   _currentIndex == onboardingData.length - 1
                       ? 'Get Started'
                       : 'Next',
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white, // ✅ button text always white
+                  ),
                 ),
               ),
             ),

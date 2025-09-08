@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const primary = Color(0xFFFF8F00);
+  // New orange from your design
+  static const primary = Color(0xFFF15A37);
+
+  // Background color (white)
+  static const bgColor = Color(0xFFFFFFFF);
+
+  // Text color (consistent across app)
   static const textColor = Colors.black87;
-  static const bgColor = Color(0xFFF2F2F2);
+
+  // Optional lighter text color for contrast
+  static const textLight = Colors.white;
 }

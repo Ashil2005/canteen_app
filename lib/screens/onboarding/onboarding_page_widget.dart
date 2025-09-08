@@ -4,7 +4,6 @@ import '../../constants/colors.dart';
 
 class OnboardingPageWidget extends StatelessWidget {
   final OnboardingModel model;
-
   const OnboardingPageWidget({super.key, required this.model});
 
   @override
@@ -12,24 +11,38 @@ class OnboardingPageWidget extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset(model.image, height: 300),
+        Image.asset(
+          model.image,
+          height: 300,
+          fit: BoxFit.contain,
+          gaplessPlayback: true,
+          // Helpful guard during dev if a filename is wrong
+          errorBuilder: (_, __, ___) => const Icon(
+            Icons.image_not_supported,
+            size: 120,
+            color: AppColors.primary,
+          ),
+        ),
         const SizedBox(height: 40),
         Text(
           model.title,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Color(0xFFB9375D),
+            color: AppColors.primary,
           ),
-          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Text(
             model.description,
-            style: const TextStyle(fontSize: 16, color: AppColors.textColor),
             textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 16,
+              color: AppColors.textColor,
+            ),
           ),
         ),
       ],

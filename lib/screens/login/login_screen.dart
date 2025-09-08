@@ -1,5 +1,5 @@
-import 'package:canteen_app/screens/forgotpw/forgotpw.dart';
 import 'package:flutter/material.dart';
+import 'package:canteen_app/constants/colors.dart'; // ✅ use AppColors
 import '../../auth/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -30,33 +30,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (user != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login successful!')),
+        const SnackBar(content: Text('✅ Login successful!')),
       );
-      // TODO: Navigate to dashboard
+
+      Navigator.pushReplacementNamed(context, '/onboarding');
     } else {
-      setState(() => _error = 'Invalid credentials. Try again.');
+      setState(() => _error = '⚠️ Invalid credentials. Try again.');
     }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFEBDEBA), // Light yellow background
+      backgroundColor: AppColors.bgColor, // ✅ White background
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // 🔹 Top Header Section
             Container(
               height: 250,
-              decoration: BoxDecoration(
-                color: Colors.amber[200],
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(50),
-                  bottomRight: Radius.circular(50),
-                ),
-              ),
+              color: AppColors.bgColor, // ✅ Same as background
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -69,26 +71,32 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           child: Text(
                             "Register",
-                            style: TextStyle(fontSize: 16, color: Colors.black),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textColor,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 30),
-                    Icon(Icons.fastfood, size: 60, color: Colors.amber[800]),
+                    const SizedBox(height: 30),
+                    Icon(Icons.fastfood, size: 60, color: AppColors.primary),
                     Text(
                       "Welcome Back",
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: AppColors.textColor,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            SizedBox(height: 40),
+
+            const SizedBox(height: 40),
+
+            // 🔹 Form Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: Column(
@@ -96,23 +104,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Email',
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   TextField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
                               ? Icons.visibility_off
                               : Icons.visibility,
+                          color: AppColors.primary,
                         ),
                         onPressed: () {
                           setState(() {
@@ -122,25 +131,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
+
                   if (_error != null)
-                    Text(_error!, style: TextStyle(color: Colors.red)),
+                    Text(_error!, style: const TextStyle(color: Colors.red)),
+
                   ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF8F00),
-                      minimumSize: Size(double.infinity, 48),
+                      backgroundColor: AppColors.primary,
+                      minimumSize: const Size(double.infinity, 48),
                     ),
                     child: _isLoading
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text("Login"),
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Login"),
                   ),
+
+                  // 🔹 Forgot Password
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (ctx) => ForgotPWScreen()));
+                      Navigator.pushNamed(context, '/forgot');
                     },
-                    child: Text('Forgot Password?'),
+                    child: Text(
+                      'Forgot Password?',
+                      style: TextStyle(color: AppColors.primary),
+                    ),
                   ),
                 ],
               ),
