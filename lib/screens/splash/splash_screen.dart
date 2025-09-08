@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/onboarding/onboarding_screen.dart';
-
-
+import 'package:canteen_app/constants/colors.dart'; // ✅ Use unified colors
+import 'package:canteen_app/screens/onboarding/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,9 +15,8 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     // Wait for 3 seconds, then navigate to onboarding
-    Future.delayed(const Duration(seconds: 5), () {
+    Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
-        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(builder: (_) => const OnboardingScreen()),
       );
@@ -28,17 +26,25 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.orange,
-      body: Center(
+      backgroundColor: AppColors.primary, // ✅ orange background
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Icon(
               Icons.fastfood,
               size: 80,
-              color: Colors.white,
+              color: Colors.white, // ✅ white icon
             ),
             SizedBox(height: 20),
+            Text(
+              "Canteen App",
+              style: TextStyle(
+                fontSize: 24,
+                color: Colors.white, // ✅ white text
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),

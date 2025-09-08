@@ -1,14 +1,34 @@
 import 'package:flutter/material.dart';
+import '../../auth/auth_service.dart';
+import '../../constants/colors.dart'; // ✅ Use AppColors
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
+  void _logout(BuildContext context) async {
+    final authService = AuthService();
+    await authService.logout();
+
+    // Navigate back to login screen and clear history
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+  }
+
+  void _editProfile(BuildContext context) {
+    // For now, just show a placeholder
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Edit Profile coming soon!")),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgColor,
       appBar: AppBar(
         title: const Text("My Profile"),
         centerTitle: true,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -27,43 +47,48 @@ class ProfilePage extends StatelessWidget {
                 // Name
                 const Text(
                   "John Doe",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
                 ),
                 const SizedBox(height: 5),
 
                 // Email
                 const Text(
                   "johndoe@example.com",
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.textColor,
+                  ),
                 ),
                 const SizedBox(height: 30),
 
                 // Edit Profile Button
                 SizedBox(
                   width: double.infinity,
-                    child: ElevatedButton(
+                  child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange, // Orange color
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
                     ),
-                    onPressed: () {
-                      // For now, no functionality
-                    },
-                    child: const Text("Edit Profile", style: TextStyle(color: Colors.white)),
+                    onPressed: () => _editProfile(context),
+                    child: const Text("Edit Profile"),
                   ),
                 ),
                 const SizedBox(height: 10),
 
-                // Logout Button (UI only, no action)
+                // Logout Button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
+                      backgroundColor:  AppColors.primary, 
+                      foregroundColor: Colors.white,
                     ),
-                    onPressed: () {
-                      // No action for now
-                    },
-                    child: const Text("Logout", style: TextStyle(color: Colors.white)),
+                    onPressed: () => _logout(context),
+                    child: const Text("Logout"),
                   ),
                 ),
               ],

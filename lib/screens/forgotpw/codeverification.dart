@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:canteen_app/constants/colors.dart'; // ✅ use AppColors
 import '../login/login_screen.dart'; // ✅ direct navigation to login
 
 class CodeVerificationScreen extends StatelessWidget {
@@ -7,25 +8,32 @@ class CodeVerificationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEBDEBA),
+      backgroundColor: AppColors.bgColor, // ✅ Unified background
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Center(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Icon(Icons.email, size: 80, color: Colors.amber[800]),
+                Icon(Icons.email, size: 80, color: AppColors.primary), // ✅ Orange
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'Check Your Email',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor, // ✅ consistent text
+                  ),
                 ),
                 const SizedBox(height: 30),
-                const Text(
+                Text(
                   "We’ve sent you a password reset link to your email.\n\n"
                   "👉 If you don’t see it in your inbox, please check your Spam or Junk folder.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.textColor, // ✅ consistent text
+                  ),
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
@@ -37,10 +45,13 @@ class CodeVerificationScreen extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber[600],
+                    backgroundColor: AppColors.primary, // ✅ Orange button
                     minimumSize: const Size(double.infinity, 48),
                   ),
-                  child: const Text('Back to Login'),
+                  child: const Text(
+                    'Back to Login',
+                    style: TextStyle(color: Colors.white), // ✅ contrast
+                  ),
                 ),
               ],
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:canteen_app/constants/colors.dart'; // ✅ use AppColors
 import '../../auth/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -29,12 +30,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (user != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account created successfully!')),
+        const SnackBar(content: Text('✅ Account created successfully!')),
       );
-      // ✅ Go directly to login using named route
       Navigator.pushReplacementNamed(context, '/login');
     } else {
-      setState(() => _error = 'Registration failed. Try again.');
+      setState(() => _error = '❌ Registration failed. Try again.');
     }
   }
 
@@ -48,16 +48,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEBDEBA),
+      backgroundColor: AppColors.bgColor, // ✅ unified background
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Center(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Icon(Icons.person_add, size: 80, color: Colors.amber[800]),
+                Icon(Icons.person_add, size: 80, color: AppColors.primary), // ✅ orange
                 const SizedBox(height: 20),
-                const Text("Create Account", style: TextStyle(fontSize: 24)),
+                Text(
+                  "Create Account",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor, // ✅ black
+                  ),
+                ),
                 const SizedBox(height: 30),
 
                 // 🔹 Email field
@@ -96,26 +103,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 // 🔹 Error message
                 if (_error != null)
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  Text(
+                    _error!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
 
                 // 🔹 Register button
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleRegister,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber[800],
+                    backgroundColor: AppColors.primary, // ✅ orange
                     minimumSize: const Size(double.infinity, 48),
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Register"),
+                      : const Text(
+                          "Register",
+                          style: TextStyle(color: Colors.white), // ✅ white text
+                        ),
                 ),
 
-                // 🔹 Back to login button (named route)
+                // 🔹 Back to login
                 TextButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/login');
                   },
-                  child: const Text("Already have an account? Login"),
+                  child: const Text(
+                    "Already have an account? Login",
+                    style: TextStyle(color: Colors.black87), // ✅ text color
+                  ),
                 ),
               ],
             ),

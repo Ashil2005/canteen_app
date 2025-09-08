@@ -1,106 +1,121 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../constants/colors.dart';
 
 class OrderPage extends StatefulWidget {
+  /// Accepts either a Map<String, dynamic> or a Firestore-like doc
+  /// with `.id` and `['field']` access.
   final dynamic item;
+
   const OrderPage({super.key, required this.item});
 
   @override
-  _OrderPageState createState() => _OrderPageState();
+  State<OrderPage> createState() => _OrderPageState();
 }
 
 class _OrderPageState extends State<OrderPage> {
   int quantity = 1;
 
-  void placeOrder() async {
+  // --- helpers to read fields safely from Map or Firestore-like doc ---
+  T? _field<T>(String key) {
     try {
-      // Ensure price is numeric
-      final num price = num.parse(widget.item['price'].toString());
-      final num totalPrice = price * quantity;
-
-      await FirebaseFirestore.instance.collection('orders').add({
-        'itemId': widget.item.id,
-        'itemName': widget.item['name'],
-        'price': price,
-        'quantity': quantity,
-        'totalPrice': totalPrice,
-        'timestamp': Timestamp.now(),
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Order placed successfully!')),
-      );
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to place order: $e')),
-      );
+      if (widget.item is Map) return (widget.item as Map)[key] as T?;
+      return widget.item[key] as T?;
+    } catch (_) {
+      return null;
     }
+  }
+
+  String get _name => _field('name')?.toString() ?? 'Item';
+  String get _imageUrl => _field('imageUrl')?.toString() ?? '';
+  num get _priceNum => _field<num>('price') ?? 0;
+  double get _price => _priceNum.toDouble();
+  double get _total => _price * quantity;
+  // --------------------------------------------------------------------
+
+  void _confirmOrder() {
+    // Pure UI feedback (no backend yet)
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('✅ Order confirmed (UI only)')),
+    );
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final num price = num.tryParse(widget.item['price'].toString()) ?? 0;
-    final num total = price * quantity;
-    String? imageUrl = widget.item['imageUrl'];
-
     return Scaffold(
+      backgroundColor: AppColors.bgColor,
       appBar: AppBar(
-        title: const Text("Order Food"),
-        backgroundColor: Colors.orange,
+        title: const Text('Order Food'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         centerTitle: true,
       ),
       body: Column(
         children: [
+          // Image / placeholder
           Container(
             height: 220,
             width: double.infinity,
             decoration: BoxDecoration(
-              image: (imageUrl != null && imageUrl.isNotEmpty)
+              image: _imageUrl.isNotEmpty
                   ? DecorationImage(
-                      image: NetworkImage(imageUrl), fit: BoxFit.cover)
+                      image: NetworkImage(_imageUrl),
+                      fit: BoxFit.cover,
+                    )
                   : null,
-              color: (imageUrl == null || imageUrl.isEmpty)
-                  ? Colors.grey.shade300
-                  : null,
+              color: _imageUrl.isEmpty ? Colors.grey.shade300 : null,
             ),
-            child: (imageUrl == null || imageUrl.isEmpty)
-                ? const Icon(Icons.fastfood, size: 50, color: Colors.orange)
+            child: _imageUrl.isEmpty
+                ? const Icon(Icons.fastfood, size: 50, color: AppColors.primary)
                 : null,
           ),
+
           const SizedBox(height: 20),
+
+          // Details
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.item['name'],
+                  _name,
                   style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  "₹$price",
+                  '₹${_price.toStringAsFixed(2)}',
                   style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w500),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textColor,
+                  ),
                 ),
                 const SizedBox(height: 20),
+
+                // Quantity controls
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.remove, color: Colors.red),
+                      icon:
+                          const Icon(Icons.remove_circle_outline, color: AppColors.primary),
                       onPressed: () {
                         setState(() {
                           if (quantity > 1) quantity--;
                         });
                       },
                     ),
-                    Text(quantity.toString(),
-                        style: const TextStyle(fontSize: 18)),
+                    Text(
+                      quantity.toString(),
+                      style: const TextStyle(fontSize: 18, color: AppColors.textColor),
+                    ),
                     IconButton(
-                      icon: const Icon(Icons.add, color: Colors.red),
+                      icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
                       onPressed: () {
                         setState(() {
                           quantity++;
@@ -112,33 +127,39 @@ class _OrderPageState extends State<OrderPage> {
               ],
             ),
           ),
+
           const Spacer(),
+
+          // Bottom bar
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: Colors.orange,
+              color: AppColors.primary,
               borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Total: ₹$total",
+                  'Total: ₹${_total.toStringAsFixed(2)}',
                   style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 ElevatedButton(
-                  onPressed: placeOrder,
+                  onPressed: _confirmOrder,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: Colors.orange,
+                    foregroundColor: AppColors.primary,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 28, vertical: 12),
+                      horizontal: 28,
+                      vertical: 12,
+                    ),
                   ),
                   child: const Text(
-                    "Confirm Order",
+                    'Confirm Order',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 )

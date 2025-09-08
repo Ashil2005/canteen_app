@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:canteen_app/auth/auth_service.dart';
+import 'package:canteen_app/constants/colors.dart'; // ✅ use AppColors
 import 'codeverification.dart';
 
 class ForgotPWScreen extends StatefulWidget {
@@ -37,12 +38,10 @@ class _ForgotPWScreenState extends State<ForgotPWScreen> {
     if (!mounted) return;
 
     if (error == null) {
-      // ✅ Show confirmation snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('✅ Reset link sent! Check your email.')),
       );
 
-      // ✅ Navigate to info screen
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const CodeVerificationScreen()),
       );
@@ -56,18 +55,22 @@ class _ForgotPWScreenState extends State<ForgotPWScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEBDEBA),
+      backgroundColor: AppColors.bgColor, // ✅ unified background
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Center(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Icon(Icons.lock_reset, size: 80, color: Colors.amber[800]),
+                Icon(Icons.lock_reset, size: 80, color: AppColors.primary), // ✅ orange
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'Reset Password',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor, // ✅ black text
+                  ),
                 ),
                 const SizedBox(height: 30),
                 TextField(
@@ -84,10 +87,13 @@ class _ForgotPWScreenState extends State<ForgotPWScreen> {
                     : ElevatedButton(
                         onPressed: _sendResetLink,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber[600],
+                          backgroundColor: AppColors.primary, // ✅ orange button
                           minimumSize: const Size(double.infinity, 48),
                         ),
-                        child: const Text('Send Reset Link'),
+                        child: const Text(
+                          'Send Reset Link',
+                          style: TextStyle(color: Colors.white), // ✅ contrast
+                        ),
                       ),
               ],
             ),

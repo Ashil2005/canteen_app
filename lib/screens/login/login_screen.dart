@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:canteen_app/constants/colors.dart'; // ✅ use AppColors
 import '../../auth/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -29,12 +30,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (user != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login successful!')),
+        const SnackBar(content: Text('✅ Login successful!')),
       );
-      // ✅ TODO: Replace with your actual dashboard/home route
-      // Navigator.pushReplacementNamed(context, '/dashboard');
+
+      Navigator.pushReplacementNamed(context, '/onboarding');
     } else {
-      setState(() => _error = 'Invalid credentials. Try again.');
+      setState(() => _error = '⚠️ Invalid credentials. Try again.');
     }
   }
 
@@ -48,20 +49,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEBDEBA), // Light yellow background
+      backgroundColor: AppColors.bgColor, // ✅ White background
       body: SingleChildScrollView(
         child: Column(
           children: [
             // 🔹 Top Header Section
             Container(
               height: 250,
-              decoration: BoxDecoration(
-                color: Colors.amber[200],
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(50),
-                  bottomRight: Radius.circular(50),
-                ),
-              ),
+              color: AppColors.bgColor, // ✅ Same as background
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                 child: Column(
@@ -74,21 +69,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () {
                             Navigator.pushNamed(context, '/register');
                           },
-                          child: const Text(
+                          child: Text(
                             "Register",
-                            style: TextStyle(fontSize: 16, color: Colors.black),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textColor,
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 30),
-                    Icon(Icons.fastfood, size: 60, color: Colors.amber[800]),
-                    const Text(
+                    Icon(Icons.fastfood, size: 60, color: AppColors.primary),
+                    Text(
                       "Welcome Back",
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: AppColors.textColor,
                       ),
                     ),
                   ],
@@ -123,6 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           _obscurePassword
                               ? Icons.visibility_off
                               : Icons.visibility,
+                          color: AppColors.primary,
                         ),
                         onPressed: () {
                           setState(() {
@@ -140,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF8F00),
+                      backgroundColor: AppColors.primary,
                       minimumSize: const Size(double.infinity, 48),
                     ),
                     child: _isLoading
@@ -148,12 +147,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         : const Text("Login"),
                   ),
 
-                  // 🔹 Forgot Password using named route
+                  // 🔹 Forgot Password
                   TextButton(
                     onPressed: () {
                       Navigator.pushNamed(context, '/forgot');
                     },
-                    child: const Text('Forgot Password?'),
+                    child: Text(
+                      'Forgot Password?',
+                      style: TextStyle(color: AppColors.primary),
+                    ),
                   ),
                 ],
               ),
