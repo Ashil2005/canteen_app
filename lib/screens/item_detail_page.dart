@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 
 class ItemDetailPage extends StatefulWidget {
-  final Map<String, dynamic> item; // expects: {name, price, imageUrl?}
+  /// expects: { id, name, price, imageUrl? }
+  final Map<String, dynamic> item;
   const ItemDetailPage({super.key, required this.item});
 
   @override
@@ -15,8 +16,8 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
   // Mock add-ons and ingredients
   final List<Map<String, dynamic>> _addons = [
     {'label': 'Extra Cheese', 'price': 15, 'selected': false},
-    {'label': 'Butter', 'price': 10, 'selected': false},
-    {'label': 'Chutney', 'price': 5, 'selected': false},
+    {'label': 'Butter',       'price': 10, 'selected': false},
+    {'label': 'Chutney',      'price': 5,  'selected': false},
   ];
 
   final List<String> _ingredients = [
@@ -27,9 +28,9 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
 
   final Map<String, String> _nutrition = const {
     'Calories': '320 kcal',
-    'Protein': '8 g',
-    'Carbs': '42 g',
-    'Fat': '12 g',
+    'Protein':  '8 g',
+    'Carbs':    '42 g',
+    'Fat':      '12 g',
   };
 
   num get _basePrice => (widget.item['price'] as num?) ?? 0;
@@ -44,159 +45,204 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
 
   num get _total => (_basePrice + _addonsTotal) * _qty;
 
+  void _onAddToCart() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Added to cart')),
+    );
+    // Return info so StudentMenuPage can add it (and optionally use qty/addons later)
+    Navigator.pop(context, {
+      'added': true,
+      'item' : widget.item,
+      'qty'  : _qty,
+      'addons': _addons.where((a) => a['selected'] == true).toList(),
+      'total': _total,
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final imageUrl = (widget.item['imageUrl'] as String?) ?? '';
+    final name     = (widget.item['name']     as String?) ?? 'Item';
 
-    return Scaffold(
-      backgroundColor: AppColors.bgColor,
-      appBar: AppBar(
-        title: Text(widget.item['name'] ?? 'Item'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Image
-          Container(
-            height: 190,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: imageUrl.isEmpty ? Colors.grey.shade300 : null,
-              image: imageUrl.isNotEmpty
-                  ? DecorationImage(
-                      image: NetworkImage(imageUrl), fit: BoxFit.cover)
-                  : null,
-            ),
-            child: imageUrl.isEmpty
-                ? const Icon(Icons.fastfood, size: 56, color: AppColors.primary)
-                : null,
-          ),
-          const SizedBox(height: 16),
-
-          // Price & Qty
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('₹$_basePrice',
-                  style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor)),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () => setState(() {
-                      if (_qty > 1) _qty--;
-                    }),
-                    icon: const Icon(Icons.remove_circle_outline),
-                  ),
-                  Text('$_qty',
-                      style: const TextStyle(
-                          fontSize: 18, color: AppColors.textColor)),
-                  IconButton(
-                    onPressed: () => setState(() => _qty++),
-                    icon: const Icon(Icons.add_circle_outline),
-                  ),
-                ],
-              )
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(widget.item['name'] ?? '',
-              style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textColor)),
-
-          const SizedBox(height: 16),
-          const Text('Ingredients',
-              style: TextStyle(
-                  fontWeight: FontWeight.w600, color: AppColors.textColor)),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: _ingredients
-                .map((ing) => Chip(
-                      label: Text(ing),
-                      backgroundColor: AppColors.primary.withOpacity(.08),
-                      side: BorderSide.none,
-                    ))
-                .toList(),
-          ),
-
-          const SizedBox(height: 16),
-          const Text('Nutrition',
-              style: TextStyle(
-                  fontWeight: FontWeight.w600, color: AppColors.textColor)),
-          const SizedBox(height: 8),
-          ..._nutrition.entries.map(
-            (e) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(e.key, style: TextStyle(color: Colors.grey.shade700)),
-                  Text(e.value,
-                      style: const TextStyle(color: AppColors.textColor)),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-          const Text('Add-ons',
-              style: TextStyle(
-                  fontWeight: FontWeight.w600, color: AppColors.textColor)),
-          const SizedBox(height: 8),
-          ..._addons.map((a) {
-            return CheckboxListTile(
-              value: a['selected'] as bool,
-              onChanged: (v) => setState(() => a['selected'] = v ?? false),
-              title: Text(a['label'],
-                  style: const TextStyle(color: AppColors.textColor)),
-              subtitle: Text('₹${a['price']}',
-                  style: TextStyle(color: Colors.grey.shade600)),
-              activeColor: AppColors.primary,
-            );
-          }),
-
-          const SizedBox(height: 90),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border:
-              Border(top: BorderSide(color: Colors.black12.withOpacity(.06))),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Total: ₹$_total',
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Added to cart')),
-                );
-                Navigator.pop(context, {
-                  'qty': _qty,
-                  'addons':
-                      _addons.where((a) => a['selected'] == true).toList(),
-                  'total': _total,
-                });
+    return WillPopScope(
+      // If system back is pressed, just pop cleanly (no extra logic needed)
+      onWillPop: () async => true,
+      child: Scaffold(
+        backgroundColor: AppColors.bgColor,
+        appBar: AppBar(
+          title: Text(name),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (v) {
+                if (v == 'back') Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Add to Cart'),
+              itemBuilder: (c) => const [
+                PopupMenuItem(value: 'back', child: Text('Back to Menu')),
+              ],
             )
           ],
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Image
+            Container(
+              height: 190,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: imageUrl.isEmpty ? Colors.grey.shade300 : null,
+                image: imageUrl.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(imageUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: imageUrl.isEmpty
+                  ? const Icon(Icons.fastfood, size: 56, color: AppColors.primary)
+                  : null,
+            ),
+            const SizedBox(height: 16),
+
+            // Price & Qty
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '₹${_basePrice.toString()}',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => setState(() {
+                        if (_qty > 1) _qty--;
+                      }),
+                      icon: const Icon(Icons.remove_circle_outline, color: AppColors.primary),
+                    ),
+                    Text('$_qty',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: AppColors.textColor,
+                        )),
+                    IconButton(
+                      onPressed: () => setState(() => _qty++),
+                      icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+                    ),
+                  ],
+                )
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            Text(
+              name,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textColor,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            const Text('Ingredients',
+                style: TextStyle(
+                    fontWeight: FontWeight.w600, color: AppColors.textColor)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: _ingredients
+                  .map((ing) => Chip(
+                        label: Text(ing),
+                        backgroundColor: AppColors.primary.withOpacity(.08),
+                        side: BorderSide.none,
+                      ))
+                  .toList(),
+            ),
+
+            const SizedBox(height: 16),
+            const Text('Nutrition',
+                style: TextStyle(
+                    fontWeight: FontWeight.w600, color: AppColors.textColor)),
+            const SizedBox(height: 8),
+            ..._nutrition.entries.map(
+              (e) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(e.key, style: TextStyle(color: Colors.grey.shade700)),
+                    Text(e.value,
+                        style: const TextStyle(color: AppColors.textColor)),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            const Text('Add-ons',
+                style: TextStyle(
+                    fontWeight: FontWeight.w600, color: AppColors.textColor)),
+            const SizedBox(height: 8),
+            ..._addons.map((a) {
+              return CheckboxListTile(
+                value: a['selected'] as bool,
+                onChanged: (v) => setState(() => a['selected'] = v ?? false),
+                title: Text(a['label'],
+                    style: const TextStyle(color: AppColors.textColor)),
+                subtitle: Text('₹${a['price']}',
+                    style: TextStyle(color: Colors.grey.shade600)),
+                activeColor: AppColors.primary,
+              );
+            }),
+
+            const SizedBox(height: 90),
+          ],
+        ),
+
+        // Bottom bar
+        bottomNavigationBar: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(color: Colors.black12.withOpacity(.06)),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Total: ₹${_total.toString()}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppColors.textColor,
+                  )),
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: _onAddToCart,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Add to Cart'),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

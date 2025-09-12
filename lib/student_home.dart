@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../constants/colors.dart';
-import 'cart_page.dart';
+import 'package:canteen_app/constants/colors.dart';
+
+// Screens in lib/screens/
+import 'package:canteen_app/screens/coupons_page.dart';
+import 'package:canteen_app/screens/notifications_page.dart';
+import 'package:canteen_app/screens/feedback_page.dart';
+import 'package:canteen_app/screens/item_detail_page.dart';
+import 'package:canteen_app/order_page.dart';
+
+// Profile lives at lib/profile_page.dart
+import 'package:canteen_app/profile_page.dart';
 
 class StudentMenuPage extends StatefulWidget {
   const StudentMenuPage({super.key});
@@ -9,7 +18,7 @@ class StudentMenuPage extends StatefulWidget {
   State<StudentMenuPage> createState() => _StudentMenuPageState();
 }
 
-/// Simple local item model (stored as Map for easy interop with Cart/Bill pages)
+/// Simple local item model
 Map<String, dynamic> _item({
   required String id,
   required String name,
@@ -27,7 +36,7 @@ Map<String, dynamic> _item({
       'available': available,
     };
 
-/// Seed data (replace with your backend later)
+/// Seed data (replace with backend later)
 final List<Map<String, dynamic>> _menuSeed = [
   _item(id: 'b1', name: 'Idli & Sambar', price: 30, category: 'Breakfast'),
   _item(id: 'b2', name: 'Masala Dosa', price: 45, category: 'Breakfast'),
@@ -41,9 +50,8 @@ class _StudentMenuPageState extends State<StudentMenuPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Frontend-only cart
   List<Map<String, dynamic>> cartItems = [];
-  Map<String, int> quantities = {}; // key: item['id'], value: qty
+  Map<String, int> quantities = {};
 
   @override
   void initState() {
@@ -76,6 +84,32 @@ class _StudentMenuPageState extends State<StudentMenuPage>
     }
   }
 
+  void openCart() async {
+    if (cartItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No items in the cart!")),
+      );
+      return;
+    }
+
+    final result = await Navigator.pushNamed(
+      context,
+      '/cart',
+      arguments: {
+        'selectedItems': cartItems,
+        'quantities': quantities,
+      },
+    );
+
+    if (!mounted) return;
+    if (result is Map) {
+      setState(() {
+        cartItems = List<Map<String, dynamic>>.from(result['cartItems'] ?? []);
+        quantities = Map<String, int>.from(result['quantities'] ?? {});
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,39 +136,11 @@ class _StudentMenuPageState extends State<StudentMenuPage>
             children: [
               IconButton(
                 icon: const Icon(Icons.shopping_cart, color: Colors.white),
-                onPressed: () {
-                  if (cartItems.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("No items in the cart!"),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => CartPage(
-                          selectedItems: cartItems,
-                          quantities: quantities,
-                        ),
-                      ),
-                    ).then((result) {
-                      if (result != null) {
-                        setState(() {
-                          cartItems = List<Map<String, dynamic>>.from(
-                              result['cartItems'] ?? []);
-                          quantities = Map<String, int>.from(
-                              result['quantities'] ?? {});
-                        });
-                      }
-                    });
-                  }
-                },
+                onPressed: openCart,
               ),
               if (cartItems.isNotEmpty)
                 Positioned(
-                  right: 8,
+                  right: 6,
                   top: 8,
                   child: Container(
                     padding: const EdgeInsets.all(4),
@@ -150,6 +156,43 @@ class _StudentMenuPageState extends State<StudentMenuPage>
                 ),
             ],
           ),
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              switch (value) {
+                case 'coupons':
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CouponsPage()),
+                  );
+                  break;
+                case 'notifications':
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NotificationsPage()),
+                  );
+                  break;
+                case 'feedback':
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const FeedbackPage()),
+                  );
+                  break;
+                case 'profile':
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfilePage()),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'coupons', child: Text('Coupons')),
+              PopupMenuItem(value: 'notifications', child: Text('Notifications')),
+              PopupMenuItem(value: 'feedback', child: Text('Feedback')),
+              PopupMenuItem(value: 'profile', child: Text('Profile')),
+            ],
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+          ),
         ],
       ),
       body: TabBarView(
@@ -160,18 +203,23 @@ class _StudentMenuPageState extends State<StudentMenuPage>
           _MenuList(category: "Snacks"),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: openCart,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.shopping_bag),
+        label: const Text('Cart'),
+      ),
     );
   }
 }
 
-/// Separate widget so it can rebuild cleanly per tab
 class _MenuList extends StatelessWidget {
   final String category;
   const _MenuList({required this.category});
 
   @override
   Widget build(BuildContext context) {
-    // Filter local items
     final items = _menuSeed
         .where((it) =>
             (it['category'] == category) && (it['available'] as bool? ?? true))
@@ -186,7 +234,6 @@ class _MenuList extends StatelessWidget {
       );
     }
 
-    // Access parent state to call addToCart / quantities
     final state = context.findAncestorStateOfType<_StudentMenuPageState>()!;
 
     return ListView.builder(
@@ -199,73 +246,114 @@ class _MenuList extends StatelessWidget {
 
         return Card(
           margin: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              imageUrl.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        imageUrl,
-                        height: 150,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+          child: InkWell(
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ItemDetailPage(item: item),
+                ),
+              );
+              if (result is Map && result['added'] == true) {
+                state.addToCart(item);
+              }
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                imageUrl.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          imageUrl,
                           height: 150,
                           width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            height: 150,
+                            width: double.infinity,
+                            color: Colors.grey.shade300,
+                            child: const Icon(Icons.fastfood,
+                                size: 50, color: AppColors.primary),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        height: 150,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
                           color: Colors.grey.shade300,
-                          child: const Icon(Icons.fastfood,
-                              size: 50, color: AppColors.primary),
+                          borderRadius: BorderRadius.circular(8),
                         ),
+                        child: const Icon(Icons.fastfood,
+                            size: 50, color: AppColors.primary),
                       ),
-                    )
-                  : Container(
-                      height: 150,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.fastfood,
-                          size: 50, color: AppColors.primary),
-                    ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textColor,
+                            ),
                           ),
-                        ),
-                        Text(
-                          "₹$price",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
+                          Text(
+                            "₹$price",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    ElevatedButton(
-                      onPressed: () => state.addToCart(item),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
+                        ],
                       ),
-                      child: const Text("Add"),
-                    ),
-                  ],
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              // ✅ Opens OrderPage directly
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => OrderPage(item: item),
+                                ),
+                              );
+                            },
+                            child: const Text('Order'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              state.addToCart(item);
+
+                              // ✅ Auto-open OrderPage right after adding
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => OrderPage(item: item),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text("Add"),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

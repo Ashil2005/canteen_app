@@ -31,6 +31,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
     });
   }
 
+  void _cancel() => Navigator.pop(context);
+
+  void _goHome() {
+    // Optional: jump straight to Student Home (adjust route name if different)
+    Navigator.pushNamedAndRemoveUntil(context, '/student-home', (route) => false);
+  }
+
   Widget _stars() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -56,6 +63,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
         title: const Text('Feedback'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            tooltip: 'Back to Home',
+            icon: const Icon(Icons.home),
+            onPressed: _goHome,
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -65,16 +79,29 @@ class _FeedbackPageState extends State<FeedbackPage> {
               Text('Order: ${widget.orderId}',
                   style: TextStyle(color: Colors.grey.shade700)),
             const SizedBox(height: 12),
-            const Text('Rate your experience',
-                style:
-                    TextStyle(fontWeight: FontWeight.w600, color: AppColors.textColor)),
+
+            const Text(
+              'Rate your experience',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textColor,
+              ),
+            ),
             const SizedBox(height: 8),
+
             _stars(),
             const SizedBox(height: 8),
-            Text('$_rating / 5',
-                style: TextStyle(
-                    color: Colors.grey.shade700, fontWeight: FontWeight.w500)),
+
+            Text(
+              '$_rating / 5',
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+
             const SizedBox(height: 16),
+
             TextField(
               controller: _ctrl,
               maxLines: 5,
@@ -82,22 +109,39 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 hintText: 'Share your feedback (optional)',
                 filled: true,
                 fillColor: Colors.white,
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
+
             const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(48),
+
+            // Bottom actions: Cancel | Submit
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _cancel,
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    child: const Text('Cancel'),
+                  ),
                 ),
-                child: const Text('Submit'),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    child: const Text('Submit'),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

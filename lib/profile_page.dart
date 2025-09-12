@@ -9,12 +9,12 @@ class ProfilePage extends StatelessWidget {
     final authService = AuthService();
     await authService.logout();
 
-    // Navigate back to login screen and clear history
+    // ✅ Navigate back to login screen and clear history
     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 
   void _editProfile(BuildContext context) {
-    // For now, just show a placeholder
+    // Placeholder for edit profile action
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Edit Profile coming soon!")),
     );
@@ -29,6 +29,12 @@ class ProfilePage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // ✅ Go back to StudentHome or previous page
+          },
+        ),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -84,7 +90,7 @@ class ProfilePage extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:  AppColors.primary, 
+                      backgroundColor: Colors.redAccent,
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () => _logout(context),
