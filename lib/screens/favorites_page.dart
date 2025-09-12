@@ -19,6 +19,15 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   final Set<String> _favorites = {};
 
+  void _goHome() {
+    // Jump straight to Student Home (replace route name if different)
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/student-home',
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,46 +43,66 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 ? null
                 : () => setState(() => _favorites.clear()),
             tooltip: 'Clear favorites',
-          )
+          ),
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: 'Back to Home',
+            onPressed: _goHome,
+          ),
         ],
       ),
-      body: ListView.separated(
-        itemCount: _items.length,
-        separatorBuilder: (_, __) => const Divider(height: 0),
-        itemBuilder: (context, i) {
-          final item = _items[i];
-          final isFav = _favorites.contains(item['id']);
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: AppColors.primary.withOpacity(.1),
-              child: const Icon(Icons.fastfood, color: AppColors.primary),
-            ),
-            title: Text(item['name'],
-                style: const TextStyle(color: AppColors.textColor)),
-            subtitle: Text('₹${item['price']}',
-                style: TextStyle(color: Colors.grey.shade600)),
-            trailing: IconButton(
-              icon: Icon(isFav ? Icons.favorite : Icons.favorite_border,
-                  color: isFav ? AppColors.primary : Colors.grey),
-              onPressed: () {
-                setState(() {
-                  isFav
-                      ? _favorites.remove(item['id'])
-                      : _favorites.add(item['id']);
-                });
+      body: _items.isEmpty
+          ? const Center(
+              child: Text(
+                'No items available',
+                style: TextStyle(color: AppColors.textColor),
+              ),
+            )
+          : ListView.separated(
+              itemCount: _items.length,
+              separatorBuilder: (_, __) => const Divider(height: 0),
+              itemBuilder: (context, i) {
+                final item = _items[i];
+                final isFav = _favorites.contains(item['id']);
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.primary.withOpacity(.1),
+                    child:
+                        const Icon(Icons.fastfood, color: AppColors.primary),
+                  ),
+                  title: Text(
+                    item['name'],
+                    style: const TextStyle(color: AppColors.textColor),
+                  ),
+                  subtitle: Text(
+                    '₹${item['price']}',
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+                  trailing: IconButton(
+                    icon: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? AppColors.primary : Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        isFav
+                            ? _favorites.remove(item['id'])
+                            : _favorites.add(item['id']);
+                      });
+                    },
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _favorites.add(item['id']);
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text('${item['name']} added to favorites')),
+                    );
+                  },
+                );
               },
             ),
-            onTap: () {
-              setState(() {
-                _favorites.add(item['id']);
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${item['name']} added to favorites')),
-              );
-            },
-          );
-        },
-      ),
     );
   }
 }

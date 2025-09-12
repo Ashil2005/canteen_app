@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'constants/colors.dart';            // shared colors
-import 'BillPage.dart';                    // Bill page sits in lib/BillPage.dart
+import 'constants/colors.dart'; // shared colors
+import 'BillPage.dart';        // Bill page sits in lib/BillPage.dart
 
 class CartPage extends StatefulWidget {
   /// Accepts a list of items. Each item can be either:
   ///  - Map<String, dynamic>  { id, name, price, imageUrl }
-  ///  - Firestore doc-like object (with .id and item['field'])
+  ///  - Firestore doc-like object (with `.id` and item['field'])
   final List<dynamic> selectedItems;
 
   /// Quantities keyed by the same `id` used in each cart item
@@ -59,7 +59,7 @@ class _CartPageState extends State<CartPage> {
     final int q = _qty[id] ?? 1;
     final num priceNum = _field<num>(item, 'price') ?? 0;
     return priceNum.toDouble() * q;
-    }
+  }
 
   double _grandTotal() {
     double total = 0;
@@ -87,7 +87,7 @@ class _CartPageState extends State<CartPage> {
     });
   }
 
-  void _proceedToBill() async {
+  Future<void> _proceedToBill() async {
     if (_items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cart is empty')),
@@ -116,6 +116,7 @@ class _CartPageState extends State<CartPage> {
     );
 
     // If BillPage popped with cleared cart, update our state
+    if (!mounted) return;
     if (result is Map) {
       setState(() {
         _items = List<dynamic>.from(result['cartItems'] ?? _items);
@@ -124,125 +125,161 @@ class _CartPageState extends State<CartPage> {
     }
   }
 
+  /// Pop back to Student Home **and** return the current cart state
+  void _returnToStudentHome() {
+    Navigator.pop(context, {
+      'cartItems': _items,
+      'quantities': _qty,
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgColor,
-      appBar: AppBar(
-        title: const Text('Your Cart'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-      ),
-      body: _items.isEmpty
-          ? const Center(
-              child: Text(
-                'No items in the cart',
-                style: TextStyle(color: AppColors.textColor),
-              ),
-            )
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _items.length,
-                    itemBuilder: (context, index) {
-                      final item   = _items[index];
-                      final id     = _idOf(item);
-                      final name   = _field(item, 'name')?.toString() ?? 'Item';
-                      final num pN = _field<num>(item, 'price') ?? 0;
-                      final double price = pN.toDouble();
-                      final int q  = _qty[id] ?? 1;
-                      final img    = _field(item, 'imageUrl')?.toString() ?? '';
-
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        child: ListTile(
-                          leading: img.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    img,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => _thumbFallback(),
-                                  ),
-                                )
-                              : _thumbFallback(),
-                          title: Text(
-                            name,
-                            style: const TextStyle(
-                              color: AppColors.textColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          subtitle: Text(
-                            "₹${price.toStringAsFixed(2)}  •  Qty: $q",
-                            style: const TextStyle(color: AppColors.textColor),
-                          ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "₹${(price * q).toStringAsFixed(2)}",
-                                style: const TextStyle(
-                                  color: AppColors.textColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.remove_circle_outline),
-                                    onPressed: () => _dec(id),
-                                  ),
-                                  Text(q.toString()),
-                                  IconButton(
-                                    icon: const Icon(Icons.add_circle_outline),
-                                    onPressed: () => _inc(id),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          onLongPress: () => _remove(id),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  color: AppColors.primary.withOpacity(0.08),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Total: ₹${_grandTotal().toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: AppColors.textColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: _proceedToBill,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Proceed to Bill'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+    return WillPopScope(
+      // Ensure system back returns cart state too
+      onWillPop: () async {
+        _returnToStudentHome();
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.bgColor,
+        appBar: AppBar(
+          title: const Text('Your Cart'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _returnToStudentHome,
+          ),
+          actions: [
+            // Quick pay from the top right as well
+            IconButton(
+              tooltip: 'Proceed to Bill',
+              icon: const Icon(Icons.receipt_long),
+              onPressed: _proceedToBill,
             ),
+          ],
+        ),
+        floatingActionButton: _items.isEmpty
+            ? null
+            : FloatingActionButton.extended(
+                onPressed: _proceedToBill,
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                icon: const Icon(Icons.payment),
+                label: const Text('Pay now'),
+              ),
+        body: _items.isEmpty
+            ? const Center(
+                child: Text(
+                  'No items in the cart',
+                  style: TextStyle(color: AppColors.textColor),
+                ),
+              )
+            : Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _items.length,
+                      itemBuilder: (context, index) {
+                        final item        = _items[index];
+                        final id          = _idOf(item);
+                        final name        = _field(item, 'name')?.toString() ?? 'Item';
+                        final num priceN  = _field<num>(item, 'price') ?? 0;
+                        final double price= priceN.toDouble();
+                        final int q       = _qty[id] ?? 1;
+                        final img         = _field(item, 'imageUrl')?.toString() ?? '';
+
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          child: ListTile(
+                            leading: img.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      img,
+                                      width: 50,
+                                      height: 50,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => _thumbFallback(),
+                                    ),
+                                  )
+                                : _thumbFallback(),
+                            title: Text(
+                              name,
+                              style: const TextStyle(
+                                color: AppColors.textColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: Text(
+                              "₹${price.toStringAsFixed(2)}  •  Qty: $q",
+                              style: const TextStyle(color: AppColors.textColor),
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "₹${(price * q).toStringAsFixed(2)}",
+                                  style: const TextStyle(
+                                    color: AppColors.textColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.remove_circle_outline),
+                                      onPressed: () => _dec(id),
+                                    ),
+                                    Text(q.toString()),
+                                    IconButton(
+                                      icon: const Icon(Icons.add_circle_outline),
+                                      onPressed: () => _inc(id),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            onLongPress: () => _remove(id),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    color: AppColors.primary.withOpacity(0.08),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Total: ₹${_grandTotal().toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: AppColors.textColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: _proceedToBill,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Proceed to Bill'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
+import '../../student_home.dart'; // ✅ so we can navigate back to StudentMenuPage
 
 class OrderPage extends StatefulWidget {
-  /// Accepts either a Map<String, dynamic> or a Firestore-like doc
-  /// with `.id` and `['field']` access.
   final dynamic item;
 
   const OrderPage({super.key, required this.item});
@@ -15,7 +14,7 @@ class OrderPage extends StatefulWidget {
 class _OrderPageState extends State<OrderPage> {
   int quantity = 1;
 
-  // --- helpers to read fields safely from Map or Firestore-like doc ---
+  // --- helpers to read fields safely ---
   T? _field<T>(String key) {
     try {
       if (widget.item is Map) return (widget.item as Map)[key] as T?;
@@ -33,11 +32,17 @@ class _OrderPageState extends State<OrderPage> {
   // --------------------------------------------------------------------
 
   void _confirmOrder() {
-    // Pure UI feedback (no backend yet)
+    // UI-only feedback
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('✅ Order confirmed (UI only)')),
     );
-    Navigator.pop(context);
+
+    // ✅ Navigate back to Student Home instead of just popping
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const StudentMenuPage()),
+      (route) => false,
+    );
   }
 
   @override
@@ -49,6 +54,17 @@ class _OrderPageState extends State<OrderPage> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // ✅ Back button also goes to Student Home
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const StudentMenuPage()),
+              (route) => false,
+            );
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -102,8 +118,8 @@ class _OrderPageState extends State<OrderPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon:
-                          const Icon(Icons.remove_circle_outline, color: AppColors.primary),
+                      icon: const Icon(Icons.remove_circle_outline,
+                          color: AppColors.primary),
                       onPressed: () {
                         setState(() {
                           if (quantity > 1) quantity--;
@@ -112,10 +128,12 @@ class _OrderPageState extends State<OrderPage> {
                     ),
                     Text(
                       quantity.toString(),
-                      style: const TextStyle(fontSize: 18, color: AppColors.textColor),
+                      style: const TextStyle(
+                          fontSize: 18, color: AppColors.textColor),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+                      icon: const Icon(Icons.add_circle_outline,
+                          color: AppColors.primary),
                       onPressed: () {
                         setState(() {
                           quantity++;
@@ -160,7 +178,8 @@ class _OrderPageState extends State<OrderPage> {
                   ),
                   child: const Text(
                     'Confirm Order',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 )
               ],

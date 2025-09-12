@@ -30,11 +30,11 @@ Future<void> main() async {
 
 class Routes {
   static const splash = '/splash';
+  static const onboarding = '/onboarding';
   static const login = '/login';
   static const register = '/register';
   static const forgot = '/forgot';
   static const codeVerification = '/check-email';
-  static const onboarding = '/onboarding';
   static const profile = '/profile';
 
   static const studentHome = '/student-home';
@@ -56,20 +56,20 @@ class CanteenApp extends StatelessWidget {
         useMaterial3: true,
       ),
 
-      // FLOW (final):
-      // Splash  -> (auto after delay) -> Login
-      // Login   -> (on success)       -> Onboarding
-      // Onboard -> (Get Started)      -> StudentHome
+      // Flow:
+      // Splash (auto → Onboarding)
+      // Onboarding (Get Started → Login)
+      // Login (success → StudentHome)
       initialRoute: Routes.splash,
 
       // Simple routes (no arguments)
       routes: {
-        Routes.splash: (_) => const SplashScreen(),          // must navigate to Routes.login after delay
-        Routes.login: (_) => LoginScreen(),                  // should navigate to Routes.onboarding on success
+        Routes.splash: (_) => const SplashScreen(),
+        Routes.onboarding: (_) => const OnboardingScreen(),
+        Routes.login: (_) => LoginScreen(),
         Routes.register: (_) => RegisterScreen(),
         Routes.forgot: (_) => const ForgotPWScreen(),
         Routes.codeVerification: (_) => const CodeVerificationScreen(),
-        Routes.onboarding: (_) => const OnboardingScreen(),  // should navigate to Routes.studentHome
         Routes.profile: (_) => const ProfilePage(),
         Routes.studentHome: (_) => const StudentMenuPage(),
       },

@@ -35,6 +35,10 @@ class _CouponsPageState extends State<CouponsPage> {
 
   String _applied = '';
 
+  void _goHome() {
+    Navigator.pushNamedAndRemoveUntil(context, '/student-home', (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,60 +47,78 @@ class _CouponsPageState extends State<CouponsPage> {
         title: const Text('Coupons & Offers'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        leading: BackButton(
+          onPressed: () => Navigator.pop(context), // ✅ back to previous page
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: 'Back to Home',
+            onPressed: _goHome, // ✅ jump to student home
+          ),
+        ],
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _coupons.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, i) {
-          final c = _coupons[i];
-          final selected = _applied == c['code'];
-          return Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(16), // ✅ fixed here
-              title: Text(
-                c['code'],
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
-                ),
+      body: _coupons.isEmpty
+          ? const Center(
+              child: Text(
+                'No coupons available right now',
+                style: TextStyle(color: AppColors.textColor),
               ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 6),
-                  Text(
-                    c['desc'],
-                    style: TextStyle(color: Colors.grey.shade700),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: _coupons.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, i) {
+                final c = _coupons[i];
+                final selected = _applied == c['code'];
+
+                return Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Minimum order: ₹${c['min']}',
-                    style: TextStyle(color: Colors.grey.shade600),
-                  ),
-                ],
-              ),
-              trailing: selected
-                  ? const Icon(Icons.check_circle, color: AppColors.primary)
-                  : ElevatedButton(
-                      onPressed: () {
-                        setState(() => _applied = c['code']);
-                        // Return selected coupon to previous screen (optional)
-                        Navigator.pop(context, c);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16),
+                    title: Text(
+                      c['code'],
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
                       ),
-                      child: const Text('Apply'),
                     ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 6),
+                        Text(
+                          c['desc'],
+                          style: TextStyle(color: Colors.grey.shade700),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Minimum order: ₹${c['min']}',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ),
+                    trailing: selected
+                        ? const Icon(Icons.check_circle, color: AppColors.primary)
+                        : ElevatedButton(
+                            onPressed: () {
+                              setState(() => _applied = c['code']);
+                              // Return selected coupon to previous screen
+                              Navigator.pop(context, c);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('Apply'),
+                          ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

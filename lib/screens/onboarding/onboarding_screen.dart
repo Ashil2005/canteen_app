@@ -14,97 +14,109 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int _currentIndex = 0;
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _goToLogin() {
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
   void _nextPage() {
-    if (_currentIndex < onboardingData.length - 1) {
+    final last = _currentIndex >= onboardingData.length - 1;
+    if (last) {
+      _goToLogin();
+    } else {
       _controller.nextPage(
         duration: const Duration(milliseconds: 300),
-        curve: Curves.easeIn,
+        curve: Curves.easeInOut,
       );
-    } else {
-      // ✅ Navigate to login after onboarding
-      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
   void _skip() {
-    _controller.jumpToPage(onboardingData.length - 1);
+    // Go straight to login for a smoother experience
+    _goToLogin();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: _skip,
-                child: const Text(
-                  'Skip',
-                  style: TextStyle(
-                    color: AppColors.primary, // ✅ unified primary color
-                    fontWeight: FontWeight.bold,
+    return WillPopScope(
+      // Optional: prevent back to splash
+      onWillPop: () async => false,
+      child: Scaffold(
+        backgroundColor: AppColors.bgColor,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _skip,
+                  child: const Text(
+                    'Skip',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: onboardingData.length,
-                onPageChanged: (index) {
-                  setState(() {
+              Expanded(
+                child: PageView.builder(
+                  controller: _controller,
+                  itemCount: onboardingData.length,
+                  onPageChanged: (index) => setState(() {
                     _currentIndex = index;
-                  });
-                },
-                itemBuilder: (context, index) {
-                  return OnboardingPageWidget(model: onboardingData[index]);
-                },
+                  }),
+                  itemBuilder: (context, index) =>
+                      OnboardingPageWidget(model: onboardingData[index]),
+                ),
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                onboardingData.length,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  height: 8,
-                  width: _currentIndex == index ? 24 : 8,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary, // ✅ dot color unified
-                    borderRadius: BorderRadius.circular(8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  onboardingData.length,
+                  (index) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    height: 8,
+                    width: _currentIndex == index ? 24 : 8,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: ElevatedButton(
-                onPressed: _nextPage,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary, // ✅ button color unified
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: ElevatedButton(
+                  onPressed: _nextPage,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                ),
-                child: Text(
-                  _currentIndex == onboardingData.length - 1
-                      ? 'Get Started'
-                      : 'Next',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.white, // ✅ button text always white
+                  child: Text(
+                    _currentIndex == onboardingData.length - 1
+                        ? 'Get Started'
+                        : 'Next',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-          ],
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
